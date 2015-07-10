@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Net;
+using SportsCrawlerHelper;
+
+
+namespace RakeshRajput.Web.Protocol
+{
+
+    public class BaseProtocolProvider
+    {
+        static BaseProtocolProvider()
+        {
+            ServicePointManager.DefaultConnectionLimit = int.MaxValue;
+        }
+
+        protected HttpWebRequest GetRequest(Uri url)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Timeout = Settings.Default.RequestTime;
+            SetProxy(ref request);
+            request.KeepAlive = true;
+            return request;
+        }
+
+        protected void SetProxy(ref HttpWebRequest request)
+        {
+            WebProxy proxy;
+            if (Settings.Default.UseProxy)
+            {
+                proxy = new WebProxy(Settings.Default.ProxyAddress, Settings.Default.ProxyPort);
+
+                //(HttpProtocolParameters.parameters.ProxyAddress, HttpProtocolParameters.parameters.ProxyPort);
+                proxy.Credentials = new NetworkCredential(
+                  Settings.Default.ProxyUserName,
+                  Settings.Default.ProxyPassword,
+                  Settings.Default.ProxyDomain);
+
+                proxy.BypassProxyOnLocal = Settings.Default.ProxyByPassOnLocal;
+            }
+            else
+            {
+                proxy = new WebProxy();
+                proxy.UseDefaultCredentials = true;
+            }
+
+            request.Proxy = proxy;
+
+
+        }
+    }
+}
